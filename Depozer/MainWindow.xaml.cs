@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+
 namespace Depozer {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
@@ -18,6 +19,11 @@ namespace Depozer {
 	public partial class MainWindow : Window {
 		public MainWindow() {
 			InitializeComponent();
+
+			wevtapiHandler.ExportChannel(IntPtr.Zero, EventLogChannel.PowerShell, "C:\\Users\\camdo\\Desktop\\test.evtx");
+
+
+
 		}
 	}
 }

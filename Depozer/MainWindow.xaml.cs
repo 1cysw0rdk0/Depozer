@@ -20,7 +20,8 @@ namespace Depozer {
 		public MainWindow() {
 			InitializeComponent();
 
-			wevtapiHandler.ExportChannel(IntPtr.Zero, EventLogChannel.PowerShell, "C:\\Users\\camdo\\Desktop\\test.evtx");
+			// Call to save the powershell logs to file
+			//wevtapiHandler.ExportChannel(IntPtr.Zero, EventLogChannel.PowerShell, "C:\\Users\\camdo\\Desktop\\test.evtx");
 
 
 

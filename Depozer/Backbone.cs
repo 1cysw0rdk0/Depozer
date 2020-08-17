@@ -24,12 +24,15 @@ namespace Depozer {
 			if (args.Length == 0) {
 				// GUI mode
 				FreeConsole();
-				var app = new App();
-				app.Run();
+
+				MainWindow mainWindow = new MainWindow();
+				mainWindow.ShowDialog();
+				
 
 			} else {
 				// Console mode
 				// TODO 
+				
 				
 			}
 		}

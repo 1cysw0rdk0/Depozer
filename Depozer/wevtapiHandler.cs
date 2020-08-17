@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.IO;
+
+
 
 
 namespace Depozer {
-	class wevtapiHandler {
+	class WevtapiHandler {
 
 
 		// Define dictionary mapping channel enum to their string equivalent
@@ -28,18 +32,18 @@ namespace Depozer {
 		private static extern bool EvtExportLog(
 			IntPtr sessionHandle,
 			string path,
-			string query,
+			string query, // USE QUERY TO FILTER EVENTS SELECTED FOR EXPORT OR RETRIEVAL
 			string targetPath,
 			[MarshalAs(UnmanagedType.I4)] EventExportLogFlags flags);
 
 
 		// Pretty looking wrapper for EvtExportLog
 		public static bool ExportChannel(IntPtr sessionHandle, EventLogChannel channel, string exportPath, string query="*"){
-
 			string channel_s = eventlogstrings[channel];
-
 			return EvtExportLog(sessionHandle, channel_s, query, exportPath, EventExportLogFlags.ChannelPath);
 		}
+
+		public static EventLog[] EnumerateChannels() => EventLog.GetEventLogs();
 
 	}
 

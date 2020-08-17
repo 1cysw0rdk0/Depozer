@@ -8,6 +8,11 @@
 		
         Title="Depozer 0.1 GUI" Height="450" Width="900" MinHeight="300" MinWidth="600">
 	<Grid>
+		<Grid.Resources>
+			<DataTemplate x:Key="CheckBoxTemplate">
+				<CheckBox IsChecked="{Binding Path=Selected, UpdateSourceTrigger=PropertyChanged}"/>
+			</DataTemplate>
+		</Grid.Resources>
 
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"/>
@@ -31,9 +36,15 @@
 			</Grid.RowDefinitions>
 
 			<Label Content="Available Log Channels" Grid.Column="0" HorizontalAlignment="Center" Grid.ColumnSpan="2" Grid.Row="0" VerticalAlignment="Center"/>
-			<DataGrid x:Name="ChannelsDisplay"  HorizontalAlignment="Stretch"  Grid.Column="0" Margin="10,0" Grid.ColumnSpan="2" Grid.Row="1"/>
-			<Button x:Name="ChannelsAll" HorizontalAlignment="Center" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Content=" Select All "/>
-			<Button x:Name="ChannelsNone" HorizontalAlignment="Center" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Content=" Select None "/>
+			<DataGrid x:Name="ChannelsDisplay" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" HorizontalAlignment="Stretch"  Grid.Column="0" Margin="10,0" Grid.ColumnSpan="2" Grid.Row="1">
+				<DataGrid.Columns>
+					<DataGridTemplateColumn Header="" CellTemplate="{StaticResource CheckBoxTemplate}"/>
+					<DataGridTextColumn Header="Log Channel" Binding="{Binding Path=ChannelName}" Width="*" IsReadOnly="True"/>
+				</DataGrid.Columns>
+			
+			</DataGrid>
+			<Button x:Name="ChannelsAll" HorizontalAlignment="Center" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Content=" Select All " Click="ChannelsAll_Click"/>
+			<Button x:Name="ChannelsNone" HorizontalAlignment="Center" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Content=" Select None " Click="ChannelsNone_Click"/>
 		</Grid>
 		<Grid Grid.Column="1">
 			<Grid.RowDefinitions>

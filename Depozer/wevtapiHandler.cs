@@ -11,7 +11,6 @@ using System.IO;
 namespace Depozer {
 	class WevtapiHandler {
 
-
 		// Define dictionary mapping channel enum to their string equivalent
 		static Dictionary<EventLogChannel,string> eventlogstrings = new Dictionary<EventLogChannel, string> {
 			{EventLogChannel.System, "System" },

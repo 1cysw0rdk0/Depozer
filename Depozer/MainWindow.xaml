@@ -12,6 +12,9 @@
 			<DataTemplate x:Key="CheckBoxTemplate">
 				<CheckBox IsChecked="{Binding Path=Selected, UpdateSourceTrigger=PropertyChanged}"/>
 			</DataTemplate>
+			<DataTemplate x:Key="CheckBoxTemplate2">
+				<CheckBox IsChecked="{Binding Path=Selected, UpdateSourceTrigger=PropertyChanged}"/>
+			</DataTemplate>
 		</Grid.Resources>
 
 		<Grid.ColumnDefinitions>
@@ -21,7 +24,15 @@
 			<ColumnDefinition Width="1*"/>
 		</Grid.ColumnDefinitions>
 
-		<Grid Grid.Column="0">
+		<Grid.RowDefinitions>
+			<RowDefinition/>
+			<RowDefinition Height="30"/>
+			<RowDefinition Height="30"/>
+			<RowDefinition Height="30"/>
+			<RowDefinition Height="30"/>
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Column="0" Grid.RowSpan="5"> 
 
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="1*"/>
@@ -41,12 +52,12 @@
 					<DataGridTemplateColumn Header="" CellTemplate="{StaticResource CheckBoxTemplate}"/>
 					<DataGridTextColumn Header="Log Channel" Binding="{Binding Path=ChannelName}" Width="*" IsReadOnly="True"/>
 				</DataGrid.Columns>
-			
+
 			</DataGrid>
 			<Button x:Name="ChannelsAll" HorizontalAlignment="Center" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Content=" Select All " Click="ChannelsAll_Click"/>
-			<Button x:Name="ChannelsNone" HorizontalAlignment="Center" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Content=" Select None " Click="ChannelsNone_Click"/>
+			<Button x:Name="ChannelsNone" HorizontalAlignment="Center" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Content=" Deselect All " Click="ChannelsNone_Click"/>
 		</Grid>
-		<Grid Grid.Column="1">
+		<Grid Grid.Column="1" Grid.RowSpan="5">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="30"/>
 				<RowDefinition/>
@@ -64,10 +75,15 @@
 			</Grid.ColumnDefinitions>
 
 			<Label Content="Available Users" Grid.Row="0" HorizontalAlignment="Center" Grid.ColumnSpan="2" />
-			<DataGrid x:Name="UserDisplay" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" Margin="10,0"/>
+			<DataGrid x:Name="UserDisplay" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" Margin="10,0">
+				<DataGrid.Columns>
+					<DataGridTemplateColumn CellTemplate="{StaticResource CheckBoxTemplate2}" />
+					<DataGridTextColumn Header="User ID" IsReadOnly="True" Width="*" Binding="{Binding Path=Username}"/>
+				</DataGrid.Columns>
+			</DataGrid>
 
-			<Button x:Name="UsersAll" Content=" Select All " Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-			<Button x:Name="UsersNone" Content=" Select None " Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+			<Button x:Name="UsersAll" Content=" Select All " Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Click="UsersAll_Click"/>
+			<Button x:Name="UsersNone" Content=" Deselect All " Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="UsersNone_Click"/>
 
 			<Label Content="Log Severity" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
@@ -76,24 +92,30 @@
 			<CheckBox x:Name="FailureAuditCB" Content="Failure Audit" Grid.Row="5" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" IsChecked="True" Margin="15,0,0,0"/>
 			<CheckBox x:Name="SuccessAuditCB" Content="Success Audit" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" IsChecked="True" Margin="15,0,0,0"/>
 			<CheckBox x:Name="WarningCB" Content="Warning" Grid.Row="6" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" IsChecked="True" Margin="15,0,0,0"/>
-			<CheckBox x:Name="AllCB" Content="All" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" IsChecked="True" Margin="15,0,0,0"/>
+			<CheckBox x:Name="AllCB" Content="All" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" IsChecked="True" Margin="15,0,0,0" Checked="AllCB_Checked" Unchecked="AllCB_Unchecked"/>
 
 		</Grid>
-		<Grid Grid.Column="2" Margin="5,0">
+		<Grid Grid.Column="2" Grid.RowSpan="5" Margin="5,0">
 
 			<Grid.RowDefinitions>
 				<RowDefinition Height="30"/>
 				<RowDefinition Height="30"/>
 				<RowDefinition Height="30"/>
 				<RowDefinition Height="30"/>
+				<RowDefinition Height="30"/>
+				<RowDefinition Height="30"/>
+				<RowDefinition Height="60"/>
+				<RowDefinition Height="60"/>
+				<RowDefinition Height="60"/>
+				<RowDefinition Height="60"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition/>
 				<ColumnDefinition/>
 			</Grid.ColumnDefinitions>
 
-			<Label Content="Start Time and Date" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.ColumnSpan="2"/>
-			<Label Content="End Time and Date" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2"/>
+			<Label Content="Start Time and Date" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.ColumnSpan="2"/>
+			<Label Content="End Time and Date" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.ColumnSpan="2"/>
 
 			<DatePicker Name="StartDayPicker" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 			<xctk1:TimePicker Name="StartTimePicker" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0" DefaultValue="00:00:00" Kind="Local" Value="00:00:00" Format="LongTime"/>
@@ -101,9 +123,16 @@
 			<DatePicker Name="EndDayPicker" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 			<xctk1:TimePicker Name="EndTimePicker" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0" DefaultValue="23:59:59" Kind="Local" Value="23:59:59" Format="LongTime"/>
 
+			<Label Content="Log Collection Intensity" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+			<Slider x:Name="IntensitySlider" Grid.Row="5" Grid.ColumnSpan="2" Margin="10,0" TickPlacement="BottomRight" Maximum="2" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" ValueChanged="Slider_ValueChanged"/>
+			<Label Name="IntensityDescriptor" Grid.Row="6" Content="Low - Windows Event API Call" VerticalAlignment="Top" Grid.ColumnSpan="2" Margin="0" Width="190"/>
 
 		</Grid>
 
+
+		<Label Content="Output Directory" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
+		<TextBox x:Name="OutputDirectory" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Height="23" Margin="10,0" Width="360" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+		<Button x:Name="BrowseDir" Grid.Column="3" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Right" Height="23" Content="  Browse  " Margin="0,0,10,0" Click="BrowseDir_Click"/>
 
 
 	</Grid>

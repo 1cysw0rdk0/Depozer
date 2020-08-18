@@ -4,9 +4,8 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.IO;
-
-
-
+using System.Windows.Controls;
+using Xceed.Wpf.Toolkit;
 
 namespace Depozer {
 	class WevtapiHandler {
@@ -43,6 +42,49 @@ namespace Depozer {
 		}
 
 		public static EventLog[] EnumerateChannels() => EventLog.GetEventLogs();
+
+
+
+
+		public static string GenerateSuppressSeverity(string Path, string Severity) {
+
+			string level = "";
+
+			switch (Severity) {
+				case "Error":
+					level = "2";
+					break;
+
+				case "Critical":
+					level = "1";
+					break;
+
+				case "Warning":
+					level = "3";
+					break;
+
+				case "Information":
+					level = "0 or Level=4";
+					break;
+
+				case "FailureAudit":
+					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"7\"] or EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>";
+
+				case "SuccessAudit":
+					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>";
+
+
+			}
+
+			string suppress = "<Suppress Path=\"" + Path + "\">*[System[(Level=" + level + ")]]</Suppress>";
+			return suppress;
+		}
+
+
+		public string[] GenerateQueryList(List<string> channels, List<string> users, List<string> severities, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker) {
+			return null;
+		}
+
 
 	}
 

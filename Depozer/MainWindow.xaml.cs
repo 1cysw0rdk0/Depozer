@@ -14,7 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Management;
 using Microsoft.WindowsAPICodePack.Dialogs;
-
+using Xceed.Wpf.Toolkit;
 
 namespace Depozer {
 	/// <summary>
@@ -301,9 +301,24 @@ namespace Depozer {
 				}
 			}
 
+
+
+
+
+
+			string[] queryList = WevtapiHandler.GenerateQueryList(channels, users, severities, StartDayPicker, StartTimePicker, EndDayPicker, EndTimePicker);
+
+
+
+
+
+
+
 			Backbone.LogEvent("ERROR", "NOT YET IMPLEMENTED");
 
 
 		}
+
+		
 	}
 }

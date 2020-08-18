@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Controls;
 using Xceed.Wpf.Toolkit;
+using System.Management;
 
 namespace Depozer {
 	class WevtapiHandler {
@@ -68,28 +69,42 @@ namespace Depozer {
 					break;
 
 				case "Failure Audit":
-					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"7\"] or EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>\n";
+					return "  <Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"7\"] or EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>\n";
 
 				case "Success Audit":
-					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>\n";
+					return "  <Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>\n";
 
 
 			}
 
-			string suppress = "<Suppress Path=\"" + Path + "\">*[System[(Level=" + level + ")]]</Suppress>\n";
+			string suppress = "  <Suppress Path=\"" + Path + "\">*[System[(Level=" + level + ")]]</Suppress>\n";
 			return suppress;
 		}
 
 
 		public static string GenerateSuppressTimeRange(string Path, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker) {
 
+			string endDateTime = endDayPicker.SelectedDate.Value.ToString("yyyy-MM-dd") + "T" + endTimePicker.Value.Value.ToString("HH:mm:ss") + ".000z";
+			string startDateTime = startDayPicker.SelectedDate.Value.ToString("yyyy-MM-dd") + "T" + startTimePicker.Value.Value.ToString("HH:mm:ss") + ".000z";
 
+			string endSuppress = "  <Suppress Path=\"" + Path + "\">*[System[TimeCreated[@SystemTime&gt;='" + endDateTime + "']]]</Suppress>";
+			string startSuppress = "  <Suppress Path=\"" + Path + "\">*[System[TimeCreated[@SystemTime&lt;='" + startDateTime + "']]]</Suppress>";
 
+			return startSuppress + "\n" + endSuppress + "\n";
 
 		}
 
 
+		public static string GenerateSearchUser(string Path, string user, string SID) {
+			string query = "  <Select Path=\"" + Path + "\">*[System[Security[@UserID='" + SID + "']]]</Select>\n";
+			query += "  <Select Path=\"" + Path + "\">*[EventData[Data=\"" + user + "\"]]</Select>\n";
+			return query;
+		}
+
+
 		public static List<string> GenerateQueryList(List<string> channels, List<string> users, List<string> severities, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker) {
+
+			Backbone.LogEvent("INFO", " ---- Generating Query List ----");
 
 			List<string> queryList = new List<string>();
 			int queryID = 0;
@@ -110,17 +125,27 @@ namespace Depozer {
 
 			foreach (string user in users) {
 				// Add both types of user select lines
+				string SID = "";
+				// First we need to identify the user's SID
+				ManagementObjectSearcher mos = new ManagementObjectSearcher("select * from Win32_Account where Name='" + user + "'");
+				foreach (ManagementObject mo in mos.Get()) {
+					SID = mo["SID"].ToString();
+					break;
+				}
+
+				query += GenerateSearchUser(channel, user, SID);
+
 			}
 
 			foreach (string severity in severities) {
 				query += GenerateSuppressSeverity(channel, severity);
 			}
 
-
-			query += "</Query>";
+			query += GenerateSuppressTimeRange(channel, startDayPicker, startTimePicker, endDayPicker, endTimePicker);
+			query += "</Query>\n";
 			Backbone.LogEvent("INFO", "Generated Query " + queryID.ToString() + ":\n" + query + "\n");
 
-			return null;
+			return query;
 		}
 
 

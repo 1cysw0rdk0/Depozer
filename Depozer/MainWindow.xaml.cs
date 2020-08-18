@@ -36,23 +36,34 @@ namespace Depozer {
 		}
 
 		private void GetSystemConfiguration() {
+			Backbone.LogEvent("INFO", "---- Gathering System Information ----");
 
 			// Gather all event log channels
 			EventLog[] channels_raw = WevtapiHandler.EnumerateChannels();
 			Channels = new List<SelectableChannelItem>();
 
+			Backbone.LogEvent("INFO", "---- Attempting to Enumerate Log Channels ----");
+
 			// Configure SelectableChannelItem and add to list
 			foreach (EventLog channel in channels_raw ) {
-				SelectableChannelItem NewChannel = new SelectableChannelItem();
-				NewChannel.Selected = false;
-				NewChannel.Channel = channel;
-				NewChannel.ChannelName = channel.LogDisplayName;
-
+				SelectableChannelItem NewChannel = new SelectableChannelItem {
+					Selected = false,
+					Channel = channel,
+					ChannelName = channel.LogDisplayName
+				};
+				Backbone.LogEvent("INFO", "Found Log Channel: " +  channel.LogDisplayName);
 				Channels.Add(NewChannel);
 			}
 
+			if (Channels.Count == 0) { Backbone.LogEvent("WARNING", "No Open Log Channels Found"); }
+
 			// Set the display datagrid
+			Backbone.LogEvent("INFO", "Setting Channel Display");
 			ChannelsDisplay.ItemsSource = Channels;
+
+
+
+			Backbone.LogEvent("INFO", "---- Attempting to Enumerate User Accounts ----");
 
 			// Gather all usernames
 			SelectQuery query = new SelectQuery("Win32_UserAccount");
@@ -63,15 +74,21 @@ namespace Depozer {
 
 			// Configure and add users to list
 			foreach (ManagementObject user in searcher.Get()) {
-				SelectableUserItem userItem = new SelectableUserItem();
-				userItem.Selected = false;
-				userItem.Username = user["Name"].ToString();
+				SelectableUserItem userItem = new SelectableUserItem {
+					Selected = false,
+					Username = user["Name"].ToString()
+				};
 
+				Backbone.LogEvent("INFO", "User Account Found: " + user["Name"]);
 				Users.Add(userItem);
 			}
 
-			UserDisplay.ItemsSource = Users;
 
+			if (Users.Count == 0) { Backbone.LogEvent("ERROR", "Failed to Enumerate User Accounts"); }
+
+			Backbone.LogEvent("INFO", "Setting User Display");
+			UserDisplay.ItemsSource = Users;
+			Backbone.LogEvent("INFO", "---- Finished Gathering System Information ----");
 		}
 
 		private class SelectableChannelItem {
@@ -115,6 +132,7 @@ namespace Depozer {
 				channel.Selected = true;
 				ChannelsDisplay.Items.Refresh();
 			}
+			Backbone.LogEvent("INFO", "Selecting all open log channels");
 		}
 
 		private void ChannelsNone_Click(object sender, RoutedEventArgs e) {
@@ -122,6 +140,7 @@ namespace Depozer {
 				channel.Selected = false;
 				ChannelsDisplay.Items.Refresh();
 			}
+			Backbone.LogEvent("INFO", "Deselecting all open log channels");
 		}
 
 		private void UsersAll_Click(object sender, RoutedEventArgs e) {
@@ -129,6 +148,7 @@ namespace Depozer {
 				user.Selected = true;
 				UserDisplay.Items.Refresh();
 			}
+			Backbone.LogEvent("INFO", "Selecting all user accounts");
 		}
 
 		private void UsersNone_Click(object sender, RoutedEventArgs e) {
@@ -136,12 +156,15 @@ namespace Depozer {
 				user.Selected = false;
 				UserDisplay.Items.Refresh();
 			}
+			Backbone.LogEvent("INFO", "Deselecting all user accounts");
 		}
 
 		private void AllCB_Checked(object sender, RoutedEventArgs e) {
 
 			CheckBox[] checkBoxes = {ErrorCB, InformationCB, FailureAuditCB, SuccessAuditCB, WarningCB};
 			preAll = new List<bool>();
+
+			Backbone.LogEvent("INFO", "Storing current selections, selecting all severities");
 
 			foreach (CheckBox checkbox in checkBoxes) {
 				preAll.Add(checkbox.IsChecked.Value);
@@ -152,6 +175,8 @@ namespace Depozer {
 		}
 
 		private void AllCB_Unchecked(object sender, RoutedEventArgs e) {
+
+			Backbone.LogEvent("INFO", "Restoring previous configuration");
 
 			CheckBox[] checkBoxes = { ErrorCB, InformationCB, FailureAuditCB, SuccessAuditCB, WarningCB };
 
@@ -183,24 +208,31 @@ namespace Depozer {
 		}
 
 		private void BrowseDir_Click(object sender, RoutedEventArgs e) {
-			var dialogBox = new CommonOpenFileDialog();
-			dialogBox.Title = "Select Output Directory for Dump";
-			dialogBox.IsFolderPicker = true;
-			dialogBox.AddToMostRecentlyUsedList = false;
-			dialogBox.AllowNonFileSystemItems = false;
-			dialogBox.EnsurePathExists = true;
-			dialogBox.EnsureFileExists = true;
-			dialogBox.Multiselect = false;
-			dialogBox.InitialDirectory = System.IO.Directory.GetCurrentDirectory();
+
+			Backbone.LogEvent("INFO", "---- Opening OpenFileDialog ----");
+
+			var dialogBox = new CommonOpenFileDialog {
+				Title = "Select Output Directory for Dump",
+				IsFolderPicker = true,
+				AddToMostRecentlyUsedList = false,
+				AllowNonFileSystemItems = false,
+				EnsurePathExists = true,
+				EnsureFileExists = true,
+				Multiselect = false,
+				InitialDirectory = System.IO.Directory.GetCurrentDirectory()
+			};
 
 			if (dialogBox.ShowDialog() == CommonFileDialogResult.Ok) {
+				Backbone.LogEvent("INFO", "Directory accepted, setting display");
 				OutputDirectory.Text = dialogBox.FileName;
+			} else {
+				Backbone.LogEvent("WARNING", "Dialog failed or cancelled, directory not set");
 			}
 		}
 
 		private void PumpAndDump_Click(object sender, RoutedEventArgs e) {
 
-			Backbone.LogEvent("INFO", "---- Collecting Log Channels ----");
+			Backbone.LogEvent("INFO", "---- Attempting to Collect Log Channels ----");
 
 			// Compile a list of all selected channels
 			List<string> channels = new List<string>();
@@ -221,7 +253,10 @@ namespace Depozer {
 				}
 			}
 
-			Backbone.LogEvent("INFO", "---- Collecting Users ----");
+
+
+
+			Backbone.LogEvent("INFO", "---- Attempting to Collect Users ----");
 
 			// Compile a list of all selected users
 			List<string> users = new List<string>();
@@ -242,6 +277,10 @@ namespace Depozer {
 				}
 			}
 
+
+
+			Backbone.LogEvent("INFO", "---- Attempting to Collect Severities ----");
+
 			// Compile a list of all selected severities
 			List<string> severities = new List<string>();
 			CheckBox[] boxes = { ErrorCB, WarningCB, InformationCB, FailureAuditCB, SuccessAuditCB };
@@ -249,10 +288,20 @@ namespace Depozer {
 			foreach (CheckBox item in  boxes) {
 				if (item.IsChecked.Value) {
 					severities.Add(item.Content.ToString());
+					Backbone.LogEvent("INFO", "Added Severity: " + item.Content.ToString());
 				}
 			}
 
+			// Prevent User Stupidity
+			if (severities.Count == 0) {
+				Backbone.LogEvent("WARNING", "No Severities Selected, Selecting All Severities.");
+				foreach (CheckBox item in boxes) {
+					severities.Add(item.Content.ToString());
+					Backbone.LogEvent("INFO", "Added User: " + item.Content.ToString());
+				}
+			}
 
+			Backbone.LogEvent("ERROR", "NOT YET IMPLEMENTED");
 
 
 		}

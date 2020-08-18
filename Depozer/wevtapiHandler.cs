@@ -67,21 +67,59 @@ namespace Depozer {
 					level = "0 or Level=4";
 					break;
 
-				case "FailureAudit":
-					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"7\"] or EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>";
+				case "Failure Audit":
+					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"7\"] or EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>\n";
 
-				case "SuccessAudit":
-					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>";
+				case "Success Audit":
+					return "<Suppress Path=\"" + Path + "\">*[EventData[Data[@Name=\"LogonType\"]=\"2\"]]</Suppress>\n";
 
 
 			}
 
-			string suppress = "<Suppress Path=\"" + Path + "\">*[System[(Level=" + level + ")]]</Suppress>";
+			string suppress = "<Suppress Path=\"" + Path + "\">*[System[(Level=" + level + ")]]</Suppress>\n";
 			return suppress;
 		}
 
 
-		public string[] GenerateQueryList(List<string> channels, List<string> users, List<string> severities, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker) {
+		public static string GenerateSuppressTimeRange(string Path, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker) {
+
+
+
+
+		}
+
+
+		public static List<string> GenerateQueryList(List<string> channels, List<string> users, List<string> severities, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker) {
+
+			List<string> queryList = new List<string>();
+			int queryID = 0;
+
+			foreach (string channel in channels) {
+				queryList.Add(GenerateQuery(channel, users, severities, startDayPicker, startTimePicker, endDayPicker, endTimePicker, queryID));
+				queryID++;
+			}
+
+
+			return null;
+		}
+
+
+		private static string GenerateQuery(string channel, List<string> users, List<string> severities, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker, int queryID) {
+
+			string query = "<Query Id=\"" + queryID.ToString() + "\" Path=\"" + channel + "\">\n";
+
+			foreach (string user in users) {
+				// Add both types of user select lines
+			}
+
+			foreach (string severity in severities) {
+				query += GenerateSuppressSeverity(channel, severity);
+			}
+
+
+			query += "</Query>";
+			Backbone.LogEvent("INFO", "Generated Query " + queryID.ToString() + ":\n" + query + "\n");
+
 			return null;
 		}
 

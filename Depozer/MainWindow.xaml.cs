@@ -272,7 +272,7 @@ namespace Depozer {
 			if (users.Count == 0) {
 				Backbone.LogEvent("WARNING", "No Users Selected, Selecting All Users.");
 				foreach (SelectableUserItem user in Users) {
-					channels.Add(user.Username);
+					users.Add(user.Username);
 					Backbone.LogEvent("INFO", "Added User: " + user.Username);
 				}
 			}
@@ -286,19 +286,20 @@ namespace Depozer {
 			CheckBox[] boxes = { ErrorCB, WarningCB, InformationCB, FailureAuditCB, SuccessAuditCB };
 
 			foreach (CheckBox item in  boxes) {
-				if (item.IsChecked.Value) {
+				if (!item.IsChecked.Value) {
 					severities.Add(item.Content.ToString());
+					Backbone.LogEvent("INFO", "Blocked Severity: " + item.Content.ToString());
+				} else {
 					Backbone.LogEvent("INFO", "Added Severity: " + item.Content.ToString());
 				}
 			}
 
 			// Prevent User Stupidity
-			if (severities.Count == 0) {
-				Backbone.LogEvent("WARNING", "No Severities Selected, Selecting All Severities.");
-				foreach (CheckBox item in boxes) {
-					severities.Add(item.Content.ToString());
-					Backbone.LogEvent("INFO", "Added User: " + item.Content.ToString());
-				}
+			if (severities.Count == 5) {
+				Backbone.LogEvent("WARNING", "All Severities Blocked, Unblocking All Severities.");
+					severities.Clear();
+					Backbone.LogEvent("INFO", "Unblocked all severity levels");
+				
 			}
 
 
@@ -306,7 +307,7 @@ namespace Depozer {
 
 
 
-			string[] queryList = WevtapiHandler.GenerateQueryList(channels, users, severities, StartDayPicker, StartTimePicker, EndDayPicker, EndTimePicker);
+			List<string> queryList = WevtapiHandler.GenerateQueryList(channels, users, severities, StartDayPicker, StartTimePicker, EndDayPicker, EndTimePicker);
 
 
 

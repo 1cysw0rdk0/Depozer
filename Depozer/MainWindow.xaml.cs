@@ -197,5 +197,64 @@ namespace Depozer {
 				OutputDirectory.Text = dialogBox.FileName;
 			}
 		}
+
+		private void PumpAndDump_Click(object sender, RoutedEventArgs e) {
+
+			Backbone.LogEvent("INFO", "---- Collecting Log Channels ----");
+
+			// Compile a list of all selected channels
+			List<string> channels = new List<string>();
+
+			foreach (SelectableChannelItem channel in Channels) {
+				if (channel.Selected) {
+					channels.Add(channel.ChannelName);
+					Backbone.LogEvent("INFO", "Added Channel: " + channel.ChannelName);
+				}
+			}
+
+			// Prevent User Stupidity
+			if (channels.Count == 0) {
+				Backbone.LogEvent("WARNING", "No Channels Selected, Selecting All Channels.");
+				foreach (SelectableChannelItem channel in Channels) {
+					channels.Add(channel.ChannelName);
+					Backbone.LogEvent("INFO", "Added Channel: " + channel.ChannelName);
+				}
+			}
+
+			Backbone.LogEvent("INFO", "---- Collecting Users ----");
+
+			// Compile a list of all selected users
+			List<string> users = new List<string>();
+
+			foreach (SelectableUserItem user in Users) {
+				if (user.Selected) {
+					users.Add(user.Username);
+					Backbone.LogEvent("INFO", "Added User: " + user.Username);
+				}
+			}
+
+			// Prevent User Stupidity
+			if (users.Count == 0) {
+				Backbone.LogEvent("WARNING", "No Users Selected, Selecting All Users.");
+				foreach (SelectableUserItem user in Users) {
+					channels.Add(user.Username);
+					Backbone.LogEvent("INFO", "Added User: " + user.Username);
+				}
+			}
+
+			// Compile a list of all selected severities
+			List<string> severities = new List<string>();
+			CheckBox[] boxes = { ErrorCB, WarningCB, InformationCB, FailureAuditCB, SuccessAuditCB };
+
+			foreach (CheckBox item in  boxes) {
+				if (item.IsChecked.Value) {
+					severities.Add(item.Content.ToString());
+				}
+			}
+
+
+
+
+		}
 	}
 }

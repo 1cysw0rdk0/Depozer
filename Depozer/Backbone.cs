@@ -13,6 +13,8 @@ namespace Depozer {
 	/// </summary>
 	class Backbone {
 
+		public static bool loggingEnabled = true;
+
 		[DllImport("kernel32.dll",
 			SetLastError = true,
 			ExactSpelling = true)]
@@ -23,7 +25,7 @@ namespace Depozer {
 
 			if (args.Length == 0) {
 				// GUI mode
-				FreeConsole();
+				//FreeConsole();
 
 				MainWindow mainWindow = new MainWindow();
 				mainWindow.ShowDialog();
@@ -36,5 +38,32 @@ namespace Depozer {
 				
 			}
 		}
+
+		public static void LogEvent(string logLevel, string logMessage) {
+			if (loggingEnabled) {
+
+				if (logLevel == "INFO") {
+					Console.WriteLine("[{0}] - {1}", logLevel, logMessage);
+				} else if (logLevel == "WARNING") {
+					Console.Write("[");
+
+					Console.ForegroundColor = ConsoleColor.DarkYellow;
+					Console.Write(logLevel);
+					Console.ResetColor();
+
+					Console.WriteLine("] - " + logMessage);
+				} else if (logLevel == "ERROR") {
+					Console.Write("[");
+
+					Console.ForegroundColor = ConsoleColor.DarkRed;
+					Console.Write(logLevel);
+					Console.ResetColor();
+
+					Console.WriteLine("] - " + logMessage);
+				}
+			}
+
+		}
+
 	}
 }

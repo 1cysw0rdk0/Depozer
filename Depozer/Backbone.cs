@@ -39,11 +39,21 @@ namespace Depozer {
 			}
 		}
 
+		/*
+		 *  logEvent - Log an event to the console if enabled
+		 *   - string logLevel - The severity of the event logged
+		 *     - Available Inputs
+		 *       - INFO - Expected Events
+		 *       - WARNING - Unexpected Events that are not necessarily problematic
+		 *         May be symptomatic of a larger issue though
+		 *       - ERROR - Unexpected Breaking Event
+		 *         Shit hit the fan
+		 */ 
 		public static void LogEvent(string logLevel, string logMessage) {
 			if (loggingEnabled) {
 
 				if (logLevel == "INFO") {
-					Console.WriteLine("[{0}] - {1}", logLevel, logMessage);
+					Console.Write("[INFO] - ");
 				} else if (logLevel == "WARNING") {
 					Console.Write("[");
 
@@ -51,7 +61,7 @@ namespace Depozer {
 					Console.Write(logLevel);
 					Console.ResetColor();
 
-					Console.WriteLine("] - " + logMessage);
+					Console.Write("] - " );
 				} else if (logLevel == "ERROR") {
 					Console.Write("[");
 
@@ -59,8 +69,16 @@ namespace Depozer {
 					Console.Write(logLevel);
 					Console.ResetColor();
 
-					Console.WriteLine("] - " + logMessage);
+					Console.Write("] - ");
 				}
+
+				// Write Event Time
+				string timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff");
+				Console.Write("[{0}] - ", timestamp);
+
+				// Write Message
+				Console.WriteLine("{0}", logMessage);
+
 			}
 
 		}

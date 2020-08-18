@@ -84,13 +84,22 @@ namespace Depozer {
 
 		public static string GenerateSuppressTimeRange(string Path, DatePicker startDayPicker, TimePicker startTimePicker, DatePicker endDayPicker, TimePicker endTimePicker) {
 
-			string endDateTime = endDayPicker.SelectedDate.Value.ToString("yyyy-MM-dd") + "T" + endTimePicker.Value.Value.ToString("HH:mm:ss") + ".000z";
-			string startDateTime = startDayPicker.SelectedDate.Value.ToString("yyyy-MM-dd") + "T" + startTimePicker.Value.Value.ToString("HH:mm:ss") + ".000z";
+			string query = "";
 
-			string endSuppress = "  <Suppress Path=\"" + Path + "\">*[System[TimeCreated[@SystemTime&gt;='" + endDateTime + "']]]</Suppress>";
-			string startSuppress = "  <Suppress Path=\"" + Path + "\">*[System[TimeCreated[@SystemTime&lt;='" + startDateTime + "']]]</Suppress>";
+			if (startDayPicker.SelectedDate.HasValue) {
+				string startDateTime = startDayPicker.SelectedDate.Value.ToString("yyyy-MM-dd") + "T" + startTimePicker.Value.Value.ToString("HH:mm:ss") + ".000z";
+				string startSuppress = "  <Suppress Path=\"" + Path + "\">*[System[TimeCreated[@SystemTime&lt;='" + startDateTime + "']]]</Suppress>\n";
+				query += startSuppress;
+			}
 
-			return startSuppress + "\n" + endSuppress + "\n";
+
+			if (endDayPicker.SelectedDate.HasValue) {
+				string endDateTime = endDayPicker.SelectedDate.Value.ToString("yyyy-MM-dd") + "T" + endTimePicker.Value.Value.ToString("HH:mm:ss") + ".000z";
+				string endSuppress = "  <Suppress Path=\"" + Path + "\">*[System[TimeCreated[@SystemTime&gt;='" + endDateTime + "']]]</Suppress>\n";
+				query += endSuppress;
+			}
+
+			return query;
 
 		}
 
@@ -115,7 +124,7 @@ namespace Depozer {
 			}
 
 
-			return null;
+			return queryList;
 		}
 
 
@@ -147,7 +156,6 @@ namespace Depozer {
 
 			return query;
 		}
-
 
 	}
 

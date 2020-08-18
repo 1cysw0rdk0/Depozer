@@ -13,8 +13,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Management;
+using System.Threading;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Xceed.Wpf.Toolkit;
+using System.ComponentModel;
 
 namespace Depozer {
 	/// <summary>
@@ -25,6 +27,8 @@ namespace Depozer {
 		private List<SelectableChannelItem> Channels;
 		private List<SelectableUserItem> Users;
 		private List<bool> preAll; // Save state for all checkbox, and reset on uncheck
+		delegate void SetValueCallback(int value);
+		delegate void SetValueCallback2(bool value);
 
 		public MainWindow() {
 			InitializeComponent();
@@ -232,6 +236,8 @@ namespace Depozer {
 
 		private void PumpAndDump_Click(object sender, RoutedEventArgs e) {
 
+			PumpAndDump.IsEnabled = false;
+
 			Backbone.LogEvent("INFO", "---- Attempting to Collect Log Channels ----");
 
 			// Compile a list of all selected channels
@@ -308,18 +314,97 @@ namespace Depozer {
 
 
 			List<string> queryList = WevtapiHandler.GenerateQueryList(channels, users, severities, StartDayPicker, StartTimePicker, EndDayPicker, EndTimePicker);
+			progress.Value = 0;
+			progress.Maximum = queryList.Count;
+			progress.Minimum = 0;
+
+
+			BackgroundWorker worker = new BackgroundWorker();
+			worker.WorkerReportsProgress = true;
+
+			worker.DoWork += new DoWorkEventHandler(SubmitQueries);
+			worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(QueriesComplete);
+
+			worker.RunWorkerAsync(argument: queryList);
+
+
+			//Thread t = new Thread(() => SubmitQueries(queryList));
+			//t.Start();
+			
+
+			
 
 
 
 
 
+			Backbone.LogEvent("ERROR", "END OF IMPLEMENTATION");
+
+		}
 
 
-			Backbone.LogEvent("ERROR", "NOT YET IMPLEMENTED");
+		private void QueriesComplete(object sender, RunWorkerCompletedEventArgs e) {
+			SetValueCallback2 enable = new SetValueCallback2(SetProcessBarValue);
+			progress.Dispatcher.Invoke(enable, true);
+		}
+
+
+		private void SubmitQueries(object sender, DoWorkEventArgs e) {
+			List<string> queryList = (List<string>) e.Argument;
+
+			SetValueCallback2 d = new SetValueCallback2(SetProcessBarValue);
+			SetValueCallback f = new SetValueCallback(SetProgressBarvalue);
+
+			progress.Dispatcher.BeginInvoke(d,false);
+
+			List<BackgroundWorker> workers = new List<BackgroundWorker>();
+
+			foreach (string query in queryList) {
+
+				BackgroundWorker worker = new BackgroundWorker();
+				worker.WorkerReportsProgress = true;
+
+				worker.DoWork += new DoWorkEventHandler(SubmitQuery);
+				worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(QuerySumbitted);
+
+				workers.Add(worker);
+
+				worker.RunWorkerAsync(argument: query);
+			}
+
+			bool isComplete = false;
+			do {
+				foreach (BackgroundWorker worker in workers) {
+					if (worker.IsBusy) {
+						isComplete = false;
+						break;
+					} else {
+						isComplete = true;
+					}
+				}
+			} while (!isComplete);
+		}
+
+
+		private void SubmitQuery(object sender, DoWorkEventArgs e) {
+			string query = (string)e.Argument;
+			Random random = new Random();
+			Thread.Sleep(random.Next(1000,10000));
+
+			// Submit the queries here
+
 
 
 		}
 
-		
+		private void QuerySumbitted(object sender, RunWorkerCompletedEventArgs e) {
+			SetValueCallback update = new SetValueCallback(SetProgressBarvalue);
+			progress.Dispatcher.Invoke(update, 1);
+		}
+
+		private void SetProcessBarValue(bool value) => PumpAndDump.IsEnabled = value;
+		private void SetProgressBarvalue(int value) => progress.Value = progress.Value + value;
+
+
 	}
 }

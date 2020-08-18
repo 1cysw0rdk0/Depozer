@@ -78,7 +78,7 @@
 			<DataGrid x:Name="UserDisplay" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" Margin="10,0">
 				<DataGrid.Columns>
 					<DataGridTemplateColumn CellTemplate="{StaticResource CheckBoxTemplate2}" />
-					<DataGridTextColumn Header="User ID" IsReadOnly="True" Width="*" Binding="{Binding Path=Username}"/>
+					<DataGridTextColumn Header="User ID" IsReadOnly="True" Width="*" Binding="{Binding Path=Username}"  />
 				</DataGrid.Columns>
 			</DataGrid>
 
@@ -135,8 +135,8 @@
 		<TextBox x:Name="OutputDirectory" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Height="23" Margin="10,0" Width="360" VerticalAlignment="Center" HorizontalAlignment="Left"/>
 		<Button x:Name="BrowseDir" Grid.Column="3" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Right" Height="23" Content="  Browse  " Margin="0,0,10,0" Click="BrowseDir_Click"/>
 
-		<Button Name="PumpAndDump" Content=" Export Events " Grid.Column="3" Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" IsDefault="True" Click="PumpAndDump_Click"/>
-		<ProgressBar Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="2" Margin="10,5"/>
+		<Button Name="PumpAndDump" Content=" Export Events " Grid.Column="3" Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" IsDefault="True" Click="PumpAndDump_Click" IsEnabled="True"/>
+		<ProgressBar x:Name="progress" Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="2" Margin="10,5"/>
 
 
 	</Grid>

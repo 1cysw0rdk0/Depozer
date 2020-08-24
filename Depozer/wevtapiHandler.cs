@@ -37,10 +37,7 @@ namespace Depozer {
 
 
 		// Pretty looking wrapper for EvtExportLog
-		public static bool ExportChannel(IntPtr sessionHandle, EventLogChannel channel, string exportPath, string query="*"){
-			string channel_s = eventlogstrings[channel];
-			return EvtExportLog(sessionHandle, channel_s, query, exportPath, EventExportLogFlags.ChannelPath);
-		}
+		public static bool ExportChannel(IntPtr sessionHandle, string channel, string exportPath, string query = "*") => EvtExportLog(sessionHandle, channel, query, exportPath, EventExportLogFlags.ChannelPath);
 
 		public static EventLog[] EnumerateChannels() => EventLog.GetEventLogs();
 

@@ -17,6 +17,9 @@ using System.Threading;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Xceed.Wpf.Toolkit;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
+using System.Linq;
+using System.IO;
 
 namespace Depozer {
 	/// <summary>
@@ -27,6 +30,7 @@ namespace Depozer {
 		private List<SelectableChannelItem> Channels;
 		private List<SelectableUserItem> Users;
 		private List<bool> preAll; // Save state for all checkbox, and reset on uncheck
+		private static Mutex mutex = new Mutex();
 		delegate void SetValueCallback(int value);
 		delegate void SetValueCallback2(bool value);
 
@@ -308,15 +312,44 @@ namespace Depozer {
 				
 			}
 
+			// Validate parent directory
+			string path = OutputDirectory.Text;
 
+			if(!Directory.Exists(path)) {
+				mutex.WaitOne();
+				Backbone.LogEvent("WARNING", "Parent directory " + path + " does not exist, attempting to create.");
 
+				try {
+					Directory.CreateDirectory(path);
+				} catch (UnauthorizedAccessException) {
+					Backbone.LogEvent("ERROR", "You do not have the required permission to create this directory.");
+					mutex.ReleaseMutex();
+					return;
+				} catch (PathTooLongException) {
+					Backbone.LogEvent("ERROR", "The path entered exceeds the system-defined limit.");
+					mutex.ReleaseMutex();
+					return;
+				} catch (DirectoryNotFoundException) {
+					Backbone.LogEvent("ERROR", "Invalid directory path. Perhaps the drive is unmapped?");
+					mutex.ReleaseMutex();
+					return;
+				} catch (Exception) {
+					Backbone.LogEvent("ERROR", "Unspecified IO Error when creating " + path);
+					mutex.ReleaseMutex();
+					return;
+				}
 
+				Backbone.LogEvent("INFO", "Parent directory " + path + " created successfully.");
+				mutex.ReleaseMutex();
+			}
 
 
 			List<string> queryList = WevtapiHandler.GenerateQueryList(channels, users, severities, StartDayPicker, StartTimePicker, EndDayPicker, EndTimePicker);
 			progress.Value = 0;
 			progress.Maximum = queryList.Count;
 			progress.Minimum = 0;
+
+			queryList.Add(path);
 
 
 			BackgroundWorker worker = new BackgroundWorker();
@@ -327,18 +360,9 @@ namespace Depozer {
 
 			worker.RunWorkerAsync(argument: queryList);
 
-
-			//Thread t = new Thread(() => SubmitQueries(queryList));
-			//t.Start();
-			
-
-			
-
-
-
-
-
+			mutex.WaitOne();
 			Backbone.LogEvent("ERROR", "END OF IMPLEMENTATION");
+			mutex.ReleaseMutex();
 
 		}
 
@@ -350,16 +374,29 @@ namespace Depozer {
 
 
 		private void SubmitQueries(object sender, DoWorkEventArgs e) {
-			List<string> queryList = (List<string>) e.Argument;
 
+
+			// Parse Arguement Object
+			List<string> queryList = (List<string>) e.Argument;
+			string outPath = queryList.Last();
+			queryList.RemoveAt(queryList.Count - 1);
+
+			// Set Callbacks to update UI
 			SetValueCallback2 d = new SetValueCallback2(SetProcessBarValue);
 			SetValueCallback f = new SetValueCallback(SetProgressBarvalue);
 
+			// Disable Export Button
 			progress.Dispatcher.BeginInvoke(d,false);
 
 			List<BackgroundWorker> workers = new List<BackgroundWorker>();
 
+			// For every query, 
+			//	configure new argument object
+			//	create a new thread
+			//	start the thread
 			foreach (string query in queryList) {
+
+				string combo_query = outPath + "\n" + query;
 
 				BackgroundWorker worker = new BackgroundWorker();
 				worker.WorkerReportsProgress = true;
@@ -369,9 +406,11 @@ namespace Depozer {
 
 				workers.Add(worker);
 
-				worker.RunWorkerAsync(argument: query);
+				worker.RunWorkerAsync(argument: combo_query);
 			}
 
+
+			// Wait for all threads to finish before finishing the worker thread
 			bool isComplete = false;
 			do {
 				foreach (BackgroundWorker worker in workers) {
@@ -387,11 +426,53 @@ namespace Depozer {
 
 
 		private void SubmitQuery(object sender, DoWorkEventArgs e) {
+
+			// Parse input argument object
 			string query = (string)e.Argument;
-			Random random = new Random();
-			Thread.Sleep(random.Next(1000,10000));
+			string path = query.Split('\n')[0];
+			query = string.Join("\n", query.Split('\n').Skip(1));
+			
+			// Simulate Thread Actions
+			//Random random = new Random();
+			//Thread.Sleep(random.Next(1000,10000));
+
+			// Grab the channel path from the query
+			string channel = query.Split('"')[3];
+			string id = query.Split('"')[1];
+
+			mutex.WaitOne();
+			Backbone.LogEvent("INFO", "Attempting to write to " + path + "\\" + channel + "\\Query_" + id);
+			
+
+			// Ensure directory path exists
+			if (!Directory.Exists(path + "\\" + channel)) {
+				Backbone.LogEvent("WARNING", "Log directory " + channel + " does not exist, attempting to create.");
+
+				try {
+					Directory.CreateDirectory(path + "\\" + channel);
+				} catch (UnauthorizedAccessException) {
+					Backbone.LogEvent("ERROR", "You do not have the required permission to create this directory.");
+					return;
+				} catch (PathTooLongException) {
+					Backbone.LogEvent("ERROR", "The path entered exceeds the system-defined limit.");
+					return;
+				} catch (DirectoryNotFoundException) {
+					Backbone.LogEvent("ERROR", "Invalid directory path. Perhaps the drive is unmapped?");
+					return;
+				} catch (Exception) {
+					Backbone.LogEvent("ERROR", "Unspecified IO Error when creating " + channel);
+					return;
+				}
+
+				Backbone.LogEvent("INFO", "Log directory " + channel + " created successfully.");
+			}
+
+			mutex.ReleaseMutex();
+
+			WevtapiHandler.ExportChannel(IntPtr.Zero, "Application", path + "\\" + channel + "\\Query_" + id + ".evtx");
 
 			// Submit the queries here
+			//WevtapiHandler.ExportChannel(IntPtr.Zero, channel, OutputDirectory.Text + "\\" + channel + "\\", query);
 
 
 

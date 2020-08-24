@@ -242,9 +242,11 @@ namespace Depozer {
 
 			PumpAndDump.IsEnabled = false;
 
-			Backbone.LogEvent("INFO", "---- Attempting to Collect Log Channels ----");
 
-			// Compile a list of all selected channels
+			//
+			// Collect Information on Selected Channels
+			//
+			Backbone.LogEvent("INFO", "---- Attempting to Collect Log Channels ----");
 			List<string> channels = new List<string>();
 
 			foreach (SelectableChannelItem channel in Channels) {
@@ -264,8 +266,9 @@ namespace Depozer {
 			}
 
 
-
-
+			//
+			// Collect Information on Selected Users
+			//
 			Backbone.LogEvent("INFO", "---- Attempting to Collect Users ----");
 
 			// Compile a list of all selected users
@@ -287,8 +290,9 @@ namespace Depozer {
 				}
 			}
 
-
-
+			//
+			// Collect Information on Selected Severities
+			//
 			Backbone.LogEvent("INFO", "---- Attempting to Collect Severities ----");
 
 			// Compile a list of all selected severities
@@ -312,8 +316,12 @@ namespace Depozer {
 				
 			}
 
-			// Validate parent directory
-			string path = OutputDirectory.Text;
+
+
+			//
+			// Validate Parent Directory
+			//
+			string path = OutputDirectory.Text + "\\" + DateTime.Now.ToString("dd-MM-yyy") + "\\" +  DateTime.Now.ToString("HH.mm.ss");
 
 			if(!Directory.Exists(path)) {
 				mutex.WaitOne();
@@ -471,8 +479,6 @@ namespace Depozer {
 
 			WevtapiHandler.ExportChannel(IntPtr.Zero, "Application", path + "\\" + channel + "\\Query_" + id + ".evtx");
 
-			// Submit the queries here
-			//WevtapiHandler.ExportChannel(IntPtr.Zero, channel, OutputDirectory.Text + "\\" + channel + "\\", query);
 
 
 

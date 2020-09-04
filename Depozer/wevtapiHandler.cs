@@ -36,12 +36,34 @@ namespace Depozer {
 			[MarshalAs(UnmanagedType.I4)] EventExportLogFlags flags);
 
 
+		[DllImport("kernel32.dll")]
+		static extern uint GetLastError();
+
+
 		// Pretty looking wrapper for EvtExportLog
-		public static bool ExportChannel(IntPtr sessionHandle, string channel, string exportPath, string query = "*") => EvtExportLog(sessionHandle, channel, query, exportPath, EventExportLogFlags.ChannelPath);
+		public static bool ExportChannel(IntPtr sessionHandle, string channel, string exportPath, string query = "*") {
+
+			if (query != "*") {
+				query = "<QueryList>\n" + query + "</QueryList>\n";
+			}
+
+			if (!EvtExportLog(sessionHandle, channel, query, exportPath, EventExportLogFlags.ChannelPath)) {
+
+				string errorCode = GetLastError().ToString();
+
+				if (errorCode == "15001") {
+					Backbone.LogEvent("ERROR", errorCode + ": The specified query is invalid");
+				} else if (errorCode == "15007") {
+					Backbone.LogEvent("ERROR", errorCode + ": The specified channel does not exist");
+				}
+
+				Backbone.LogEvent("ERROR", GetLastError().ToString());
+				return false;
+			}
+			return true;
+		}
 
 		public static EventLog[] EnumerateChannels() => EventLog.GetEventLogs();
-
-
 
 
 		public static string GenerateSuppressSeverity(string Path, string Severity) {

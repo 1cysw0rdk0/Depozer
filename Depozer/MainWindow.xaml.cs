@@ -438,7 +438,7 @@ namespace Depozer {
 			// Parse input argument object
 			string query = (string)e.Argument;
 			string path = query.Split('\n')[0];
-			query = string.Join("\n", query.Split('\n').Skip(1));
+			query = string.Join("", query.Split('\n').Skip(1));
 			
 			// Simulate Thread Actions
 			//Random random = new Random();
@@ -477,7 +477,7 @@ namespace Depozer {
 
 			mutex.ReleaseMutex();
 
-			WevtapiHandler.ExportChannel(IntPtr.Zero, "Application", path + "\\" + channel + "\\Query_" + id + ".evtx");
+			WevtapiHandler.ExportChannel(IntPtr.Zero, channel, path + "\\" + channel + "\\Query_" + id + ".evtx", query);
 
 
 
